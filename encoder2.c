@@ -18,33 +18,34 @@
 
 int main(void) 
 {
-
-FILE* rvalue;
-char value[] = "0";
-char svalue[] = "1";
-chdir("/sys/class/gpio/gpio199");
-float stime = clock();
-while (1) 
-{    
-    rvalue = fopen("value", "r");	
-    value[0] = fgetc(rvalue);
+    float etime;
+    FILE* rvalue;
+    char value[2],svalue[2];
+    svalue[1]='\0';
+    value[1]='\0';
+    chdir("/sys/class/gpio/gpio199");
+    rvalue = fopen("value", "r");
+    svalue[0] = fgetc(rvalue);
     fclose(rvalue);
-    /*
-    printf("pin:%s \n", value);
-    printf("stored:%s \n", svalue);
-    */
-    int cmp = strcmp(svalue, value);
-    if (cmp != 0)
-    {
-	float etime = clock();
-	printf("%f\n",(etime-stime)/CLOCKS_PER_SEC);
-	stime = etime;
-	//printf("difference detected\n");
-        strcpy(svalue, value);
+    float stime = clock();
+    while (1) 
+    {    
+        rvalue = fopen("value", "r");	
+        value[0] = fgetc(rvalue);
+        fclose(rvalue);
+        /*
+         printf("pin:%s \n", value);
+         printf("stored:%s \n", svalue);
+         */
+        
+        if (strcmp(svalue, value))
+        {
+            etime = clock();
+            printf("%f\n",(etime-stime)/CLOCKS_PER_SEC);
+            stime = etime;
+            //printf("difference detected\n");
+            svalue[0]=value[0];
+        }
     }
-}
-
-
-return 0;
-
+    return 0;
 }
