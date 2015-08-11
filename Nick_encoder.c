@@ -1,12 +1,16 @@
 #include "stdio.h"
 #include "firmata.h"
 #include "stdbool.h"
-#include "clock.h"
+#include "time.h"
 
 #define PI 3.14159265359
 #define DIAMETER 7.239
+#define CUTOFF 0.5
+#define FAST
 
-int main()
+float speed;
+
+void main()
 {
     t_firmata     *firmata;
     firmata = firmata_new("/dev/ttyACM99"); //init Firmata
@@ -17,7 +21,7 @@ int main()
     
     float buffer[10];
     
-    int i;
+    long int i=0;
     
     for (i=0;i<10;i++)
     {
@@ -27,11 +31,51 @@ int main()
     long int stime=clock();
     
     firmata_pull(firmata);
-    int value1=firmata->pins[12].value == HIGH;
+    bool value1=firmata->pins[12].value == HIGH;
     
-    for (i=0;i<10;i++)
+    speed=0.0;
+    
+    while (i<9)
     {
         firmata_pull(firmata);
-        printf("pin 12 value = %d\n", (firmata->pins[12].value == HIGH));
+        if((firmata->pins[12].value == HIGH)^(value1))
+        {
+            buffer[i+1]=clock()-stime;
+            speed = PI*DIAMETER/(4.0*(buffer[i+1]-buffer[i]))*CLOCKS_PER_SEC;
+        }
+    }
+    
+    int j=0;
+    long int etime=0;
+    
+    while (1)
+    {
+        firmata_pull(firmata);
+        if((firmata->pins[12].value == HIGH)^(value1))
+        {
+            ++i;
+            etime=clock();
+            if( float(1.0*(etime-stime)/CLOCKS_PER_SEC>0.05)
+               {
+                   speed = PI*DIAMETER/(4.0*(etime-buffer[j==0? 9:j-1]))*CLOCKS_PER_SEC;
+                   buffer[j]=etime;
+                   j=j==9? 0:j+1;
+               }
+               else if ( float(1.0*(etime-stime)/CLOCKS_PER_SEC>0.01))
+               {
+                   speed = 1.25*PI*DIAMETER/(etime-buffer[j>4? j-5:j+5])*CLOCKS_PER_SEC;
+                   buffer[j]=etime;
+                   j=j==9? 0:j+1;
+               }
+               else
+               {
+                   speed = 2.5*PI*DIAMETER/(etime-buffer[j])*CLOCKS_PER_SEC;
+                   buffer[j]=etime;
+                   j=j==9? 0:j+1;
+               }
+        
+               if (float(1.0*(clock()-buffer[j==0? 9:j-1])/CLOCKS_PER_SEC)>CUTOFF)
+        }
+               
     }
 }
