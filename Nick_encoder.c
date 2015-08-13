@@ -6,7 +6,8 @@
 #define PI 3.14159265359
 #define DIAMETER 7.239
 #define CUTOFF 0.5
-#define FAST
+#define FAST 0.01
+#define SLOW 0.05
 
 float speed;
 
@@ -55,26 +56,28 @@ void main()
         {
             ++i;
             etime=clock();
-            if( float(1.0*(etime-stime)/CLOCKS_PER_SEC>0.05)
+            if( float(1.0*(etime-stime)/CLOCKS_PER_SEC>SLOW)
                {
                    speed = PI*DIAMETER/(4.0*(etime-buffer[j==0? 9:j-1]))*CLOCKS_PER_SEC;
                    buffer[j]=etime;
                    j=j==9? 0:j+1;
                }
-               else if ( float(1.0*(etime-stime)/CLOCKS_PER_SEC>0.01))
+            else if ( float(1.0*(etime-stime)/CLOCKS_PER_SEC>FAST))
                {
                    speed = 1.25*PI*DIAMETER/(etime-buffer[j>4? j-5:j+5])*CLOCKS_PER_SEC;
                    buffer[j]=etime;
                    j=j==9? 0:j+1;
                }
-               else
+            else
                {
                    speed = 2.5*PI*DIAMETER/(etime-buffer[j])*CLOCKS_PER_SEC;
                    buffer[j]=etime;
                    j=j==9? 0:j+1;
                }
-        
-               if (float(1.0*(clock()-buffer[j==0? 9:j-1])/CLOCKS_PER_SEC)>CUTOFF)
+        }
+        if (float(1.0*(clock()-buffer[j==0? 9:j-1])/CLOCKS_PER_SEC)>CUTOFF)
+        {
+            speed=0;
         }
                
     }
